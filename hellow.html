@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hello World</title>
+     <style>
+        #promptInput, #responseOutput {
+            width: 30%;
+            height: 30em;
+        }
+
+         .input-container {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 1em;
+        }
+
+         #translationInput {
+            width: 30%;
+            height: 20em;
+        }
+
+        .input-container label {
+            font-weight: bold;
+            margin-bottom: 0.5em;
+        }
+
+        .input-container input {
+            width: 30%;
+    </style>
+</head>
+<body>
+    <h1>Hello World</h1>
+
+     <div class="input-container">
+        <label for="backgroundInput">文字背景:</label>
+        <input type="text" id="backgroundInput" placeholder="请输入文字背景" />
+    </div>
+
+    <div class="input-container">
+        <label for="translationInput">翻译正文:</label>
+        <textarea id="translationInput" rows="20" placeholder="请输入翻译正文"></textarea>
+    </div>
+
+    <div class="input-container">
+        <label for="styleInput">文字风格:</label>
+        <input type="text" id="styleInput" placeholder="请输入文字风格" />
+    </div>
+
+    <button onclick="generateText()">生成需求文本</button>
+
+    <div>
+        <h3>生成的文本:</h3>
+        <form onsubmit="event.preventDefault(); callOpenAI();">
+            <textarea id="generatedTextOutput" rows="20" cols="60" readonly style="width: 30%;"></textarea>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+
+
+    <div>
+        <h3>Response:</h3>
+        <textarea id="responseOutput" rows="20" cols="50" readonly></textarea>
+    </div>
+
+    <script>
+        async function callOpenAI() {
+            const prompt = document.getElementById('generatedTextOutput').value;
+            const apiKey = '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'; // WARNING: DO NOT PUT YOUR ACTUAL API KEY IN FRONTEND CODE
+            const url = 'https://api.openai.com/v1/chat/completions';
+
+            const requestBody = {
+                model: 'gpt-3.5-turbo',
+                messages: [
+                    { role: 'system', content: '你是一位训练有素的翻译，擅长把文学性较强的英文著作翻译成中文。' },
+                    { role: 'user', content: prompt }
+                ]
+            };
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const responseContent = data.choices[0].message.content.trim();
+                    document.getElementById('responseOutput').value = responseContent;
+                } else {
+                    console.error('Request failed with status:', response.status);
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        function generateText() {
+            const background = document.getElementById('backgroundInput').value;
+            const translation = document.getElementById('translationInput').value;
+            const style = document.getElementById('styleInput').value;
+            const generatedText = `${background} ${translation} ${style}`;
+            document.getElementById('generatedTextOutput').value = generatedText;
+        }
+    </script>
+</body>
+</html>
